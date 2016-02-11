@@ -1,0 +1,129 @@
+import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.StdStats;
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+import java.lang.String;
+
+
+public class Percolation {
+    private int[][] grid;
+    private int grid_size;
+    
+    WeightedQuickUnionUF obj;
+    
+    private int xyto1d(int x,int y){
+        
+        int index=0;
+        
+        if ( x==0){ //for first rows, index is just row+col
+            index=x+y+1;
+        }
+        if (x>0){
+            index = x*grid_size+1+y;
+        }
+        return index;          
+    }
+         
+    public Percolation(int N){
+        // create N-by-N grid, with all sites blocked      
+        if(N<=0){
+         throw new IllegalArgumentException("N should be >= 0"); 
+        }
+        grid=new int [N][N];
+        grid_size = N;
+        for(int i=0; i<N;i++){
+            for(int j=0; j<N;j++){
+                grid[i][j]=-1; //all the grids are blocked
+            }       
+        } 
+        obj = new WeightedQuickUnionUF((N*N)+2);      
+        
+    }
+    
+    
+    public void open(int i, int j){
+        // open site (row i, column j) if it is not open already
+
+        if ((i<=0 || j<=0 ) || i >grid_size || j>grid_size){
+           throw new ArrayIndexOutOfBoundsException(String.valueOf(i) + " "+ String.valueOf(j));
+        }
+        
+ //       if(!this.isOpen(i,j)){
+            grid[i-1][j-1] = 0; //open the site    
+ //       }  
+        
+        int x=i-1;
+        int y=j-1;
+        
+        if(x*grid_size+y < grid_size){
+            obj.union(0,this.xyto1d(x,y));
+        }
+        
+        if(((x*grid_size+1) >=(grid_size*grid_size-grid_size)+1) && ((x*grid_size+1) <= (grid_size*grid_size))){
+            obj.union(grid_size*grid_size+1,this.xyto1d(x,y));
+        }
+        
+        if ((x>=0 && y>0)){
+            if (grid[x][y-1]==0){
+            obj.union(this.xyto1d(x,y), this.xyto1d(x,y-1)); 
+            }
+        }
+        
+        if ((x>=1 && y<grid_size-1 && x<grid_size-1)){
+            if(grid[x][y+1]==0){
+            obj.union(this.xyto1d(x,y), this.xyto1d(x,y+1));
+          }
+        }
+        
+        if ((x<grid_size-1)){
+                if(grid[x+1][y]==0){
+                obj.union(this.xyto1d(x,y), this.xyto1d(x+1,y));
+            }
+        } 
+        
+        if (x>0){
+            if(grid[x-1][y]==0){
+            obj.union(this.xyto1d(x,y), this.xyto1d(x-1,y)); 
+            }
+        }
+   
+        System.out.println(obj.find(0));
+        
+    }
+    public boolean isOpen(int i, int j){
+        // is site (row i, column j) open?
+        if ((i<=0 || j<=0 ) || i >grid_size || j>grid_size){
+           throw new ArrayIndexOutOfBoundsException(String.valueOf(i) + " "+ String.valueOf(j));
+        }
+        
+        if (grid[i-1][j-1] == 0)
+            return true;
+        else
+            return false;
+    }
+    public boolean isFull(int i, int j){
+        // is site (row i, column j) full?
+        if ((i<=0 || j<=0 ) || i >grid_size || j>grid_size){
+           throw new ArrayIndexOutOfBoundsException(String.valueOf(i) + " "+ String.valueOf(j));
+        }
+        
+        if (obj.connected(0,this.xyto1d(i-1,j-1))){
+          return true;  
+        }
+        else{
+            return false;
+        }
+    }
+    
+    public boolean percolates()  {
+        // does the system percolate?
+        if(obj.connected(0,(grid_size*grid_size+1)))
+            return true;
+        else
+            return false;
+    }
+
+   public static void main(String[] args) {
+// test client (optional)
+   }
+}
+   
